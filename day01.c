@@ -30,31 +30,38 @@ int main(int argc, char *argv[]) {
 	}
 
 	CLOCK_START
-	char current;   // current character we're reading
+	char current_chr;   // current character we're reading
 	int result = 0; // final result we'll return
-	int first_digit = 0;  // first digit (10's place)
-	int second_digit = 0;
-  int current_digit;
+	int first_digit = 0;  // flag to indicate that we've found the first digit in a line
+	int second_digit;
+	int current_digit;
 	
-	while((current = fgetc(file_stream)) != EOF) {
-		if((current_digit = is_digit(current)) > 0) {
+	// read every byte in the file
+	while((current_chr = fgetc(file_stream)) != EOF) {
+		if((current_digit = is_digit(current_chr)) > 0) {
+			// if we haven't yet found the first digit in a line, set the first_digit
+			// flag to indicate that we have, and add 10 times that digit to the result
 			if (!first_digit) {
 				first_digit = 1;
 				result += current_digit * 10;
 			}
+			// set the second digit to the current digit regardless; we'll only add it
+			// to the result once we know it's the last digit in the line. This also
+			// covers the case where a line has only one digit, e.g. "se7en" should yield 77.
 			second_digit = current_digit;
 		}
-		if(current == '\n') {
+		// if we're at the end of a line, add the second digit, and reset the 
+		// flag to indicate we haven't found the first digit
+		if(current_chr == '\n') {
 			result += second_digit;
 			first_digit = 0;
-			second_digit = 0;
 		}
 	}
 	
 		
+	CLOCK_END
 	fclose(file_stream);
 	printf("Part 1: %d\n", result);
-	CLOCK_END
 	return 0;
 }
 
