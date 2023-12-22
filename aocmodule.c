@@ -15,19 +15,20 @@ int8_t is_digit(char chr) {
 static PyObject *
 aoc_part1(PyObject *self, PyObject *args)
 {
-    const char *puzzle_input;
+    Py_buffer puzzle_input;
 
-    if (!PyArg_ParseTuple(args, "s", &puzzle_input))
+    if (!PyArg_ParseTuple(args, "s*", &puzzle_input))
         return NULL;
 
     int result = 0; // final result we'll return
     bool first_digit = 0;  // flag to indicate that we've found the first digit in a line
     uint8_t second_digit = 0;
     int8_t current_digit;
+    char *current_chr = (char*)puzzle_input.buf;
     
-    // read every byte in the file
-    for(size_t i=0; i < strlen(puzzle_input); i++) {
-        if((current_digit = is_digit(puzzle_input[i])) > 0) {
+    // read every byte in the buffer
+    for(Py_ssize_t i=0; i < puzzle_input.len; i++) {
+        if((current_digit = is_digit(*current_chr)) > 0) {
             // if we haven't yet found the first digit in a line, set the first_digit
             // flag to indicate that we have, and add 10 times that digit to the result
             if (!first_digit) {
@@ -41,13 +42,18 @@ aoc_part1(PyObject *self, PyObject *args)
         }
         // if we're at the end of a line, add the second digit, and reset the 
         // flag to indicate we haven't found the first digit
-        if(puzzle_input[i] == '\n') {
+        if(*current_chr == '\n') {
             result += second_digit;
             first_digit = 0;
             second_digit = 0;
         }
+        current_chr++;
     }
     result += second_digit; // allow for input without trailing newline
+
+    // release the buffer
+    PyBuffer_Release(&puzzle_input);
+
     return PyLong_FromLong(result);
 }
 
