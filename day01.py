@@ -1,10 +1,11 @@
 from typing import Optional
 
 
-def first_digit(word: str) -> Optional[int]:
+def first_digit(word: str) -> int:
     for char in word:
         if char.isdigit():
             return int(char)
+    return 0
 
 
 def cal_value(line: str) -> int:

@@ -16,6 +16,7 @@ def test_first_digit(word, expected):
         ("abc123", 13),
         ("nine10eleven12", 12),
         ("se7en", 77),
+        ("", 0),
     ],
 )
 class TestCalVal:
