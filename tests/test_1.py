@@ -2,15 +2,28 @@ import pytest
 
 import day01
 
+from aocmodule import part1
+
 
 @pytest.mark.parametrize("word, expected", [("abc123", 1)])
 def test_first_digit(word, expected):
     assert day01.first_digit(word) == expected
 
 
-@pytest.mark.parametrize("line, expected", [("abc123", 13)])
-def test_cal_value(line, expected):
-    assert day01.cal_value(line) == expected
+@pytest.mark.parametrize(
+    "line, expected",
+    [
+        ("abc123", 13),
+        ("nine10eleven12", 12),
+        ("se7en", 77),
+    ],
+)
+class TestCalVal:
+    def test_cal_value(self, line, expected):
+        assert day01.cal_value(line) == expected
+
+    def test_cal_ext(self, line, expected):
+        assert part1(line) == expected
 
 
 SAMPLE_INPUT = """\
@@ -23,6 +36,10 @@ treb7uchet
 
 def test_sample_1():
     assert day01.part_1(SAMPLE_INPUT) == 142
+
+
+def test_sample_ext():
+    assert part1(SAMPLE_INPUT) == 142
 
 
 @pytest.mark.parametrize(
