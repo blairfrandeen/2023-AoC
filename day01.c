@@ -54,30 +54,31 @@ part_1(FILE *file_stream)
     return result;
 }
 
+// hard-code the numbers we're looking for
+const char NUMS[9][6] = {"one", "two",   "three", "four", "five",
+                         "six", "seven", "eight", "nine"};
+
 int
-part_2(FILE *file_stream)
+part_2(void *file_start, size_t file_size)
 {
-    char current_chr;  // current character we're reading
-    int result = 0;    // final result we'll return
+    int result = 0;  // final result we'll return
     // flag to indicate that we've found the first digit in a line
     bool first_digit = 0;
     uint8_t second_digit = 0;
     int8_t current_digit;
 
-    // hard-code the numbers we're looking for
-    const char NUMS[9][6] = {"one", "two",   "three", "four", "five",
-                             "six", "seven", "eight", "nine"};
-    char *line = "twone9ninenineight";
     bool match = 0;
+    char *current_chr = (char *)file_start;
+    char *next_match;
     // read every byte in the file
-    while ((current_chr = fgetc(file_stream)) != EOF) {
-        if ((current_digit = is_digit(current_chr)) > 0) {
+    for (size_t i = 0; i < file_size; i++) {
+        if ((current_digit = is_digit(*current_chr)) > 0) {
             if (!first_digit) {
                 first_digit = 1;
                 result += current_digit * 10;
-                /* printf("a: %d\n", result); */
+                printf("a: %d\n", result);
             }
-            /* printf("D: %d - %d\n", current_digit, result); */
+            printf("D: %d - %d\n", current_digit, result);
             second_digit = current_digit;
         }
         else {
@@ -86,25 +87,20 @@ part_2(FILE *file_stream)
                 // if the word matches
                 for (size_t k = 0; k < strlen(NUMS[j]); k++) {
                     // point to the kth position forward in the file stream
-                    fseek(file_stream, -1 + k, SEEK_CUR);
-                    if ((current_chr = fgetc(file_stream)) == EOF) {
-                        // go back to where we were in the file stream if we
-                        // hit EOF
-                        fseek(file_stream, -k + 1, SEEK_CUR);
+                    next_match = current_chr + k;
+                    if (*next_match == EOF) {
                         break;
                     }
-                    else if (current_chr == '\n') {
+                    else if (*next_match == '\n') {
                         match = 0;
                         break;
                     }
-                    /* printf("%c", current_chr); */
-                    if (current_chr != NUMS[j][k]) {
+                    printf("%c", *next_match);
+                    if (*next_match != NUMS[j][k]) {
                         match = 0;
-                        fseek(file_stream, -k, SEEK_CUR);
                         break;
                     }
                     // if we get to the end of the loop, we found a match.
-                    fseek(file_stream, -k, SEEK_CUR);
                     match = 1;
                 }
                 if (match) {
@@ -112,20 +108,21 @@ part_2(FILE *file_stream)
                     if (!first_digit) {
                         first_digit = 1;
                         result += current_digit * 10;
-                        /* printf("b: %d\n", result); */
+                        printf("b: %d\n", result);
                     }
                     second_digit = current_digit;
-                    /* printf("W: %d - %d\n", current_digit, result); */
+                    printf("W: %d - %d\n", current_digit, result);
                     break;
                 }
             }
         }
-        if (current_chr == '\n') {
+        if (*current_chr == '\n') {
             result += second_digit;
-            /* printf("c: %d\n", result); */
+            printf("c: %d\n", result);
             first_digit = 0;
             match = 0;
         }
+        current_chr++;
     }
     return result;
 }
@@ -133,7 +130,7 @@ part_2(FILE *file_stream)
 int
 main(int argc, char *argv[])
 {
-    char *datafile = "inputs/01";
+    char *datafile = "inputs/01_test2";
     FILE *file_stream = fopen(datafile, "r");
     if (file_stream == NULL) {
         printf("Error: could not open file %s: %s.\n", datafile,
@@ -141,9 +138,9 @@ main(int argc, char *argv[])
         exit(-1);
     }
 
-    int num_runs = 1000;
+    int num_runs = 1;
     float total_time = 0.0;
-    int result;
+    int result, result_2;
 
     clock_t start_time, end_time;
     for (int i = 0; i < num_runs; i++) {
@@ -157,7 +154,21 @@ main(int argc, char *argv[])
     printf("Average Runtime: %.3f ms (%d runs)\n", avg_time * 1000, num_runs);
     printf("Part 1: %d\n", result);
 
-    int result_2 = part_2(file_stream);
+    void *file_start = (void *)file_stream;
+    fseek(file_stream, 0, SEEK_END);
+    size_t file_size = ftell(file_stream) / sizeof(char) - 1;
+    rewind(file_stream);
+    printf("%p - %ld\n", file_start, file_size);
+    total_time = 0;
+    for (int i = 0; i < num_runs; i++) {
+        start_time = clock();
+        result_2 = part_2(file_start, file_size);
+        end_time = clock();
+        rewind(file_stream);
+        total_time += (float)(end_time - start_time) / CLOCKS_PER_SEC;
+    }
+    avg_time = total_time / num_runs;
+    printf("Average Runtime: %.3f ms (%d runs)\n", avg_time * 1000, num_runs);
     printf("Part 2: %d\n", result_2);
     fclose(file_stream);
     return 0;
