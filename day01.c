@@ -67,7 +67,6 @@ part_2(FILE *file_stream)
     // hard-code the numbers we're looking for
     const char NUMS[9][6] = {"one", "two",   "three", "four", "five",
                              "six", "seven", "eight", "nine"};
-    char *line = "twone9ninenineight";
     bool match = 0;
     // read every byte in the file
     while ((current_chr = fgetc(file_stream)) != EOF) {
@@ -141,7 +140,7 @@ main(int argc, char *argv[])
         exit(-1);
     }
 
-    int num_runs = 1000;
+    int num_runs = 100;
     float total_time = 0.0;
     int result;
 
@@ -154,11 +153,21 @@ main(int argc, char *argv[])
         total_time += (float)(end_time - start_time) / CLOCKS_PER_SEC;
     }
     float avg_time = total_time / num_runs;
-    printf("Average Runtime: %.3f ms (%d runs)\n", avg_time * 1000, num_runs);
     printf("Part 1: %d\n", result);
+    printf("Average Runtime: %.3f ms (%d runs)\n", avg_time * 1000, num_runs);
 
-    int result_2 = part_2(file_stream);
+    int result_2;
+    total_time = 0;
+    for (int i = 0; i < num_runs; i++) {
+        start_time = clock();
+        result_2 = part_2(file_stream);
+        end_time = clock();
+        rewind(file_stream);
+        total_time += (float)(end_time - start_time) / CLOCKS_PER_SEC;
+    }
+    avg_time = total_time / num_runs;
     printf("Part 2: %d\n", result_2);
+    printf("Average Runtime: %.3f ms (%d runs)\n", avg_time * 1000, num_runs);
     fclose(file_stream);
     return 0;
 }
